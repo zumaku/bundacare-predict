@@ -21,6 +21,7 @@ def predict(request: PredictRequest):
     kalori = round((protein * 4) + (karbohidrat * 4) + (lemak * 9), 2)
 
     return {
+        "food_name": "Makanan Baru",
         "image_url": request.image_url,
         "protein": protein,
         "carbohydrate": karbohidrat,
