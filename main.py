@@ -70,10 +70,10 @@ def predict(request: PredictRequest):
         # Cari nutrisi di dataset
         row = nutrition_df[nutrition_df["class"].str.lower() == food_name.lower()]
         if not row.empty:
-            protein = float(row["protein"].values[0]) * count
-            carbohydrate = float(row["carbohydrate"].values[0]) * count
-            fat = float(row["fat"].values[0]) * count
-            calories = float(row["calories"].values[0]) * count
+            protein = float(row["protein_g_per_100g"].values[0]) * count
+            carbohydrate = float(row["carb_g_per_100g"].values[0]) * count
+            fat = float(row["fat_g_per_100g"].values[0]) * count
+            calories = float(row["kcal_per_100g"].values[0]) * count
         else:
             protein = carbohydrate = fat = calories = 0
 
