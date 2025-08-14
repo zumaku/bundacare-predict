@@ -68,7 +68,7 @@ def predict(request: PredictRequest):
 
     for food_name, count in counts.items():
         # Cari nutrisi di dataset
-        row = nutrition_df[nutrition_df["food_name"].str.lower() == food_name.lower()]
+        row = nutrition_df[nutrition_df["class"].str.lower() == food_name.lower()]
         if not row.empty:
             protein = float(row["protein"].values[0]) * count
             carbohydrate = float(row["carbohydrate"].values[0]) * count
