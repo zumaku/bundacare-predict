@@ -1,1 +1,1 @@
-pip install fastapi uvicorn[standard] ultralytics pandas requests pillow
+pip install fastapi uvicorn[standard] ultralytics pandas requests pillow ultralytics
