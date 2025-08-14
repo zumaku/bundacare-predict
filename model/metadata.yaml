@@ -1,0 +1,67 @@
+description: Ultralytics YOLO11s model trained on /content/Makanan-3/data.yaml
+author: Ultralytics
+date: '2025-08-10T11:32:51.108697'
+version: 8.3.176
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+batch: 1
+imgsz:
+- 640
+- 640
+names:
+  0: ayam bakar
+  1: ayam goreng
+  2: bakso
+  3: bakwan
+  4: bihun
+  5: bubur ayam
+  6: bubur kacang hijau
+  7: bubur mutiara
+  8: bubur sumsum
+  9: capcay
+  10: ceker ayam
+  11: cenil
+  12: es pisang ijo
+  13: gado-gado
+  14: gulai ikan
+  15: ikan goreng
+  16: kerupuk
+  17: ketan hijau
+  18: ketan hitam
+  19: lodeh
+  20: lontong
+  21: martabak telur
+  22: mie
+  23: nasi goreng
+  24: nasi kuning
+  25: nasi putih
+  26: nugget
+  27: opor ayam
+  28: pasta
+  29: pecel
+  30: pempek
+  31: perkedel
+  32: pisang potong
+  33: rawon
+  34: rendang
+  35: roti
+  36: sate
+  37: sate jeroan
+  38: sate telur
+  39: sosis
+  40: soto
+  41: tahu
+  42: telur
+  43: tempe
+  44: tongseng
+  45: tumis kangkung
+  46: udang
+args:
+  batch: 1
+  fraction: 1.0
+  half: false
+  int8: false
+  nms: false
+channels: 3
