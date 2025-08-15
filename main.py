@@ -42,7 +42,7 @@ def predict(request: PredictRequest):
     img = Image.open(BytesIO(response.content)).convert("RGB")
     
     # Deteksi objek
-    results = model(img)
+    results = model.predict(source=img, conf=0.25)
     
     # Siapkan struktur data untuk menyimpan hasil
     detected_foods = defaultdict(lambda: {'count': 0, 'bounding_boxes': []})
