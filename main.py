@@ -53,20 +53,13 @@ def predict(request: PredictRequest):
         class_id = int(box.cls)
         class_name = results[0].names[class_id]
         
-        # Ambil koordinat [x1, y1, x2, y2]
-        x1, y1, x2, y2 = box.xyxy[0].tolist()
+        # Ambil koordinat
         
-        # Konversi ke format [x, y, w, h]
-        x = x1
-        y = y1
-        w = x2 - x1  # Lebar (width)
-        h = y2 - y1  # Tinggi (height)
-        
-        coordinates_xywh = [x, y, w, h]
+        coordinates = box.xyxy[0].tolist()
         
         # Tambahkan data ke dictionary
         detected_foods[class_name]['count'] += 1
-        detected_foods[class_name]['bounding_boxes'].append(coordinates_xywh)
+        detected_foods[class_name]['bounding_boxes'].append(coordinates)
 
     # Proses hasil untuk response API
     foods_list = []
