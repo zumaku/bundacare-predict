@@ -33,7 +33,7 @@ def home():
     return {"message": "BundaCare API - Siap melakukan prediksi"}
 
 # =====================
-# 5. Endpoint Predict (Dengan Bounding Box)
+# 5. Endpoint Predict (Dengan Bounding Box [x, y, w, h])
 # =====================
 @app.post("/predict")
 def predict(request: PredictRequest):
@@ -53,13 +53,20 @@ def predict(request: PredictRequest):
         class_id = int(box.cls)
         class_name = results[0].names[class_id]
         
-        # Ambil koordinat bounding box
-        # format: [x1, y1, x2, y2] -> sudut kiri atas dan kanan bawah
-        coordinates = box.xyxy[0].tolist() 
+        # Ambil koordinat [x1, y1, x2, y2]
+        x1, y1, x2, y2 = box.xyxy[0].tolist()
+        
+        # Konversi ke format [x, y, w, h]
+        x = x1
+        y = y1
+        w = x2 - x1  # Lebar (width)
+        h = y2 - y1  # Tinggi (height)
+        
+        coordinates_xywh = [x, y, w, h]
         
         # Tambahkan data ke dictionary
         detected_foods[class_name]['count'] += 1
-        detected_foods[class_name]['bounding_boxes'].append(coordinates)
+        detected_foods[class_name]['bounding_boxes'].append(coordinates_xywh)
 
     # Proses hasil untuk response API
     foods_list = []
@@ -68,7 +75,7 @@ def predict(request: PredictRequest):
     for food_name, data in detected_foods.items():
         count = data['count']
         
-        # Cari nutrisi di dataset
+        # Cari nutrisi
         row = nutrition_df[nutrition_df["class"].str.lower() == food_name.lower()]
         if not row.empty:
             protein = float(row["protein_g_per_100g"].values[0]) * count
@@ -81,7 +88,7 @@ def predict(request: PredictRequest):
         foods_list.append({
             "name": food_name,
             "count": count,
-            "bounding_boxes": data['bounding_boxes'], # <-- DATA BOUNDING BOX DITAMBAHKAN DI SINI
+            "bounding_boxes": data['bounding_boxes'],
             "protein": protein,
             "carbohydrate": carbohydrate,
             "fat": fat,
