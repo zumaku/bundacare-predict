@@ -26,26 +26,14 @@ class PredictRequest(BaseModel):
     image_url: str
 
 # =====================
-# 4. Fungsi Hitung Nutrisi
-# =====================
-def calculate_nutrition(class_name, count):
-    row = nutrition_df[nutrition_df["class"] == class_name].iloc[0]
-    return {
-        "kcal": row["kcal_per_100g"] * count,
-        "protein": row["protein_g_per_100g"] * count,
-        "fat": row["fat_g_per_100g"] * count,
-        "carb": row["carb_g_per_100g"] * count
-    }
-
-# =====================
-# 5. Endpoint Home
+# 4. Endpoint Home
 # =====================
 @app.get("/")
 def home():
     return {"message": "BundaCare API - Siap melakukan prediksi"}
 
 # =====================
-# 6. Endpoint Predict
+# 5. Endpoint Predict (Dengan Bounding Box)
 # =====================
 @app.post("/predict")
 def predict(request: PredictRequest):
@@ -56,17 +44,30 @@ def predict(request: PredictRequest):
     # Deteksi objek
     results = model(img)
     
-    # Hitung jumlah tiap class
-    counts = defaultdict(int)
+    # Siapkan struktur data untuk menyimpan hasil
+    detected_foods = defaultdict(lambda: {'count': 0, 'bounding_boxes': []})
+
+    # Iterasi melalui setiap kotak deteksi
     for box in results[0].boxes:
+        # Ambil nama class
         class_id = int(box.cls)
         class_name = results[0].names[class_id]
-        counts[class_name] += 1
+        
+        # Ambil koordinat bounding box
+        # format: [x1, y1, x2, y2] -> sudut kiri atas dan kanan bawah
+        coordinates = box.xyxy[0].tolist() 
+        
+        # Tambahkan data ke dictionary
+        detected_foods[class_name]['count'] += 1
+        detected_foods[class_name]['bounding_boxes'].append(coordinates)
 
+    # Proses hasil untuk response API
     foods_list = []
     total_nutrition = {"protein": 0, "carbohydrate": 0, "fat": 0, "calories": 0}
 
-    for food_name, count in counts.items():
+    for food_name, data in detected_foods.items():
+        count = data['count']
+        
         # Cari nutrisi di dataset
         row = nutrition_df[nutrition_df["class"].str.lower() == food_name.lower()]
         if not row.empty:
@@ -80,6 +81,7 @@ def predict(request: PredictRequest):
         foods_list.append({
             "name": food_name,
             "count": count,
+            "bounding_boxes": data['bounding_boxes'], # <-- DATA BOUNDING BOX DITAMBAHKAN DI SINI
             "protein": protein,
             "carbohydrate": carbohydrate,
             "fat": fat,
