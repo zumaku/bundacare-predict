@@ -12,12 +12,12 @@ app = FastAPI()
 # =====================
 # 1. Load Dataset Nutrisi
 # =====================
-nutrition_df = pd.read_csv("model/nutrition.csv")
+nutrition_df = pd.read_csv("model/nutrition2.csv", dtype={"class": str})
 
 # =====================
 # 2. Load Model YOLO
 # =====================
-model = YOLO("model/best.pt")
+model = YOLO("model/best2.pt")
 
 # =====================
 # 3. Model Request Body
@@ -26,14 +26,31 @@ class PredictRequest(BaseModel):
     image_url: str
 
 # =====================
-# 4. Endpoint Home
+# 4. Risk Calculation Logic
+# =====================
+def calculate_risk(total_nutrition):
+    """
+    Menghitung risiko kesehatan berdasarkan total kalori.
+    Anda bisa menyesuaikan ambang batas ini sesuai kebutuhan.
+    """
+    risks=[]
+    
+    total_nutrition['calories'] > 300 and risks.append("Risiko obesitas")
+    total_nutrition['carbohydrate'] > 30 and risks.append("Risiko diabetes gestasional")
+    total_nutrition['fat'] > 10 and risks.append("Risiko hipertensi/kolesterol tinggi")
+    total_nutrition['protein'] < 3 and risks.append("Risiko kekurangan gizi janin")
+    
+    return risks if risks else ["Relatif aman"]
+
+# =====================
+# 5. Endpoint Home
 # =====================
 @app.get("/")
 def home():
     return {"message": "BundaCare API - Siap melakukan prediksi"}
 
 # =====================
-# 5. Endpoint Predict (Dengan Debugging)
+# 6. Endpoint Predict (Dengan Debugging)
 # =====================
 @app.post("/predict")
 def predict(request: PredictRequest):
@@ -90,8 +107,13 @@ def predict(request: PredictRequest):
         for food_name, data in detected_foods.items():
             count = data['count']
             
+            print(f"Mencari data nutrisi: {food_name}")
+            
+            # Bersihkan nama makanan yang dicari (hapus spasi & huruf kecil)
+            search_name = food_name.strip().lower()
+            
             # Cari nutrisi
-            row = nutrition_df[nutrition_df["class"].str.lower() == food_name.lower()]
+            row = nutrition_df[nutrition_df["class"].str.lower() == search_name]
             if not row.empty:
                 # Hitung nutrisi per 100g dikali jumlah item
                 protein = float(row["protein_g_per_100g"].values[0]) * count
@@ -119,11 +141,14 @@ def predict(request: PredictRequest):
 
         print(f"Final response: {len(foods_list)} food types detected")
         
+        risk = calculate_risk(total_nutrition)
+        
         return {
             "image_url": request.image_url,
-            "image_dimensions": {"width": img.width, "height": img.height},  # Tambahan info
+            "image_dimensions": {"width": img.width, "height": img.height},
             "foods": foods_list,
-            "total": total_nutrition
+            "total": total_nutrition,
+            "risk": risk
         }
         
     except Exception as e:
